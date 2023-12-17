@@ -31,7 +31,7 @@ select render('Name: {{ value }}, Age: {{ age }}', (select name, age from users 
 -- render array of values by looping
 select render('{% for value in values %} {{ value }} {% endfor %}', (select array(select name from users)));
 
--- render multiple rows with multiple columns (as { values: [ { name: 'Example 1', age: 10 }, { name: 'Example 2', age: 20 } ] })
+-- render multiple rows with multiple columns
 select
     render(
         '{% for row in rows %} name: {{ row.name }}, age: {{ row.age }} {% endfor %}',
@@ -80,9 +80,7 @@ create or replace function api.index() returns "text/html" as $$
 $$ language sql stable;
 ```
 
-## HTML
-
-Example of rendered HTML.
+## Rendered HTML
 
 ```html
 
