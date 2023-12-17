@@ -69,17 +69,20 @@ LIVE DEMO at [_](_)
 
 ## SQL
 
-Example of a full web page rendered from SQL.
+Example of a full web page rendered with SQL ([source](https://github.com/mkaski/pg_render_example/blob/master/sql/002_products.sql)).
 
 ```sql
-create or replace function api.index() returns "text/html" as $$
+create or replace function api.products() returns "text/html" as $$
   select render(
     (select template from templates where id = 'layout'),
     (json_build_object(
-      'title', 'Example',
+      'title', 'Products',
       'styles', (select template from templates where id = 'styles'),
       'header', (select template from templates where id = 'header'),
-      'children', (select render((select template from templates where id = 'products'), json_agg(to_json(select * from list_products))))),
+      'children', (select render(
+          (select template from templates where id = 'products'),
+          (select json_agg(to_json(products.*)) from products)
+      )),
       'footer', (select template from templates where id = 'footer')
     ))
   );
@@ -92,21 +95,21 @@ $$ language sql stable;
 
 <html>
   <head>
-    <title>Hello World</title>
-    <style>body { font-family: 'sans-serif'; color: blue }</style>
+    <title>Products</title>
+    <style>{...}</style>
   </head>
   <body>
     <header>
-      <h1>Header</h1>
+      <h1>Layout Example</h1>
     </header>
     <ul>
       <li>
         <h2>Product Name</h2>
         <p>Product Description</p>
         <p>$100</p>
-        <img src="image.jpg" />
+        <img src="..." />
       </li>
-      ...
+      {...}
   </ul>
     <footer>
       <p>Footer</p>
