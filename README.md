@@ -6,8 +6,14 @@ Supports [liquid](https://shopify.github.io/liquid/) templating language via [li
 
 # Installation
 
+Download from [Releases](https://github.com/mkaski/pg_render/releases).
+
 ```bash
-# install pg_render extension
+# Ubuntu w/ PostgreSQL 15
+RUN wget https://github.com/mkaski/pg_render/releases/download/v0.5.0/pg_render-v0.5.0-pg15-amd64-linux-gnu.deb \
+    && dpkg -i pg_render-v0.5.0-pg15-amd64-linux-gnu.deb \
+    && apt-get install -f \
+    && rm -rf pg_render-v0.5.0-pg15-amd64-linux-gnu.deb
 ```
 
 # Getting Started
@@ -57,7 +63,7 @@ select render((select template from templates where id = 'example'), (select nam
 
 ## Example with PostgREST
 
-See [pg_render_example](./example) project for a full example of using pg_render with PostgREST to serve backendless web app.
+See [pg_render_example](https://github.com/mkaski/pg_render_example) project for Dockerized pg_render & [PostgREST](https://postgrest.org) Hello World application.
 
 LIVE DEMO at [_](_)
 
