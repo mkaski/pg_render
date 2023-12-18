@@ -10,7 +10,7 @@ Download from [Releases](https://github.com/mkaski/pg_render/releases).
 
 ```bash
 # Ubuntu w/ PostgreSQL 15
-RUN wget https://github.com/mkaski/pg_render/releases/download/v0.5.0/pg_render-v0.5.0-pg15-amd64-linux-gnu.deb \
+wget https://github.com/mkaski/pg_render/releases/download/v0.5.0/pg_render-v0.5.0-pg15-amd64-linux-gnu.deb \
     && dpkg -i pg_render-v0.5.0-pg15-amd64-linux-gnu.deb \
     && apt-get install -f \
     && rm -rf pg_render-v0.5.0-pg15-amd64-linux-gnu.deb
