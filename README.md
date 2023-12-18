@@ -102,6 +102,7 @@ Made with
 
 ```bash
 # clone this repo
-cargo install
+cargo install --locked cargo-pgrx
+cargo pgrx init
 cargo pgrx run
 ```
