@@ -1,8 +1,44 @@
 # pg_render
 
-A view render engine for PostgreSQL. Render view templates with SQL query data.
+Render engine extension for PostgreSQL.
 
-Supports [liquid](https://shopify.github.io/liquid/) templating language via [liquid-rust](https://github.com/cobalt-org/liquid-rust).
+```sql
+-- PostgreSQL extension
+create extension pg_render;
+-- Serve /index using postgREST
+create function api.index() returns "text/html" as $$
+-- Render HTML template with pg_render
+select render(
+  '<html>
+    <head>
+      <title>{{ title }}</title>
+    </head>
+    <body>
+      <h1>{{ title }}</h1>
+      <p>{{ text }}</p>
+      <strong>{{ author }}</strong>
+    </body>
+  </html>',
+  (select title, text, author from posts where id = 1)
+)
+$$;
+```
+
+->
+
+```html
+# HTTP GET /index
+<html>
+  <head>
+    <title>Example</title>
+  </head>
+  <body>
+    <h1>Example</h1>
+    <p>Example text</p>
+    <strong>Example author</strong>
+  </body>
+</html>
+```
 
 # Installation
 
@@ -16,14 +52,16 @@ wget https://github.com/mkaski/pg_render/releases/download/v0.5.0/pg_render-v0.5
     && rm -rf pg_render-v0.5.0-pg15-amd64-linux-gnu.deb
 ```
 
-# Getting Started
+# Examples
+
+See more examples in [pg_render_example](https://github.com/mkaski/pg_render_example/blob/master/sql/002_products.sql) project, and how to use pg_render with [PostgREST](https://postgrest.org).
 
 ```sql
-create extension pg_render;
-
 -- example data
 create table users (name text not null, age integer);
 insert into users (name, age) values ('Example 1', 10), ('Example 2', 20), ('Exampl 2', 30);
+create table templates (id text not null, template text not null);
+insert into templates (id, template) values ('example', '<header>{{ name }}</header><footer>{{ age }}</footer>');
 
 -- render a single value
 select render('The count is {{ value }}', (select count(*) from users));
@@ -46,83 +84,24 @@ select
 from users;
 
 -- render from saved template
-create table templates (id text not null, template text not null);
-insert into templates (id, template) values ('example', '
-<html>
-  <head>
-    <title>Example</title>
-  </head>
-  <body>
-    <h1>name: {{ name }}</h1>
-    <h2>age: {{ age }}</h2>
-  </body>
-');
-
-select render((select template from templates where id = 'example'), (select name, age from users where name = 'Example 1')::json));
-```
-
-## Example with PostgREST
-
-See [pg_render_example](https://github.com/mkaski/pg_render_example) project for Dockerized pg_render & [PostgREST](https://postgrest.org) Hello World application.
-
-LIVE DEMO at [_](_)
-
-## SQL
-
-Example of a full web page rendered with SQL ([source](https://github.com/mkaski/pg_render_example/blob/master/sql/002_products.sql)).
-
-```sql
-create or replace function api.products() returns "text/html" as $$
-  select render(
-    (select template from templates where id = 'layout'),
-    (json_build_object(
-      'title', 'Products',
-      'styles', (select template from templates where id = 'styles'),
-      'header', (select template from templates where id = 'header'),
-      'children', (select render(
-          (select template from templates where id = 'products'),
-          (select json_agg(to_json(products.*)) from products)
-      )),
-      'footer', (select template from templates where id = 'footer')
-    ))
-  );
-$$ language sql stable;
-```
-
-## Rendered HTML
-
-```html
-
-<html>
-  <head>
-    <title>Products</title>
-    <style>{...}</style>
-  </head>
-  <body>
-    <header>
-      <h1>Layout Example</h1>
-    </header>
-    <ul>
-      <li>
-        <h2>Product Name</h2>
-        <p>Product Description</p>
-        <p>$100</p>
-        <img src="..." />
-      </li>
-      {...}
-  </ul>
-    <footer>
-      <p>Footer</p>
-    </footer>
-  </body>
-</html>
+select render(
+  (select template from templates where id = 'example'),
+  (select name, age from users where name = 'Example 1')::json
+);
 
 ```
 
 # Development
 
-See [pgrx documentation](https://github.com/pgcentralfoundation/pgrx) for more information.
+Made with
+
+- [Liquid](https://shopify.github.io/liquid/) templating language via [liquid-rust](https://github.com/cobalt-org/liquid-rust)
+- [pgrx](https://github.com/pgcentralfoundation/pgrx) Rust extension framework for PostgreSQL
+
+## Build and run locally
 
 ```bash
+# clone this repo
+cargo install
 cargo pgrx run
 ```
