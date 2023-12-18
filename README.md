@@ -19,7 +19,7 @@ select render(
       <strong>{{ author }}</strong>
     </body>
   </html>',
-  (select title, text, author from posts where id = 1)
+  (select to_json(props) from (select title, text, author from posts where id = 1) props)
 )
 $$;
 ```
@@ -70,23 +70,27 @@ select render('The count is {{ value }}', (select count(*) from users));
 select render('Name: {{ value }}', (select name as value from users where name = 'Example 1'));
 
 -- render multiple columns from a single row
-select render('Name: {{ value }}, Age: {{ age }}', (select name, age from users where name = 'Example 1')::to_json);
+select render('Name: {{ value }}, Age: {{ age }}', (select name, age from users where name = 'Example 1'));
 
 -- render array of values by looping
 select render('{% for value in values %} {{ value }} {% endfor %}', (select array(select name from users)));
 
 -- render multiple rows with multiple columns
 select
-    render(
-        '{% for row in rows %} name: {{ row.name }}, age: {{ row.age }} {% endfor %}',
-        json_agg(to_json(users.*))
-    )
+  render(
+    '{% for row in rows %} name: {{ row.name }}, age: {{ row.age }} {% endfor %}',
+    json_agg(to_json(users.*))
+  )
 from users;
 
 -- render from saved template
 select render(
   (select template from templates where id = 'example'),
-  (select name, age from users where name = 'Example 1')::json
+  (select to_json(props) from (
+    select name, age 
+    from users 
+    where name = 'Example 1') props
+  )
 );
 
 ```
