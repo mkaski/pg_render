@@ -50,6 +50,9 @@ wget https://github.com/mkaski/pg_render/releases/download/v0.5.0/pg_render-v0.5
     && dpkg -i pg_render-v0.5.0-pg15-amd64-linux-gnu.deb \
     && apt-get install -f \
     && rm -rf pg_render-v0.5.0-pg15-amd64-linux-gnu.deb
+
+# In PostgreSQL
+create extension pg_render;
 ```
 
 # Examples
@@ -58,41 +61,65 @@ See more examples in [pg_render_example](https://github.com/mkaski/pg_render_exa
 
 ```sql
 -- example data
-create table users (name text not null, age integer);
-insert into users (name, age) values ('Example 1', 10), ('Example 2', 20), ('Exampl 2', 30);
-create table templates (id text not null, template text not null);
-insert into templates (id, template) values ('example', '<header>{{ name }}</header><footer>{{ age }}</footer>');
+create table posts (id serial primary key, title text not null, text text not null, author text not null);
+insert into posts (title, text, author) values
+  ('Title', 'Example content', 'Author'),
+  ('Title 2', 'Example content 2', 'Author 2'),
+  ('Title 3', 'Example content 3', 'Author 3');
 
+create table templates (id text primary key, template text not null);
+insert into templates (id, template) values ('example', '<header>{{ title }}</header><article>{{ text }}</article>');
+```
+
+Render single template with data. Eg. render a single template with the query result.
+
+`render(template text, input json | array | single value)`
+
+```sql
 -- render a single value
-select render('The count is {{ value }}', (select count(*) from users));
+select render('Total posts: {{ value }}', (select count(*) from posts));
 
 -- render a single column from a single row
-select render('Name: {{ value }}', (select name as value from users where name = 'Example 1'));
+select render('Title: {{ value }}', (select title as value from posts where id = 1));
 
 -- render multiple columns from a single row
-select render('Name: {{ value }}, Age: {{ age }}', (select name, age from users where name = 'Example 1'));
+select render('Title: {{ title }}, Text: {{ text }}', (select to_json(props) from (select title, text from posts where id = 1) props));
 
--- render array of values by looping
-select render('{% for value in values %} {{ value }} {% endfor %}', (select array(select name from users)));
+-- render array of values by looping in template
+select render('{% for value in values %} {{ value }} {% endfor %}', (select array(select title from posts)));
 
 -- render multiple rows with multiple columns
 select
   render(
-    '{% for row in rows %} name: {{ row.name }}, age: {{ row.age }} {% endfor %}',
-    json_agg(to_json(users.*))
+    '{% for row in rows %} {{ row.title }} - {{ row.text }} - {{ row.author }} {% endfor %}',
+    json_agg(to_json(posts.*))
   )
-from users;
+from posts;
 
 -- render from saved template
 select render(
   (select template from templates where id = 'example'),
   (select to_json(props) from (
-    select name, age 
-    from users 
-    where name = 'Example 1') props
+    select title, text 
+    from posts 
+    where title = 'Title 3') props
   )
 );
+```
 
+Render multiple rows with aggregate render function. Eg. render a template for all posts queried.
+
+`render_agg(template text, input record | json | single value)`
+
+```sql
+-- render aggregate with single column
+select render_agg('{{ value }}', title) from posts where id < 3;
+
+-- render aggregate using derived table
+select render_agg('{{ title }} {{ text }}', props) from (select title, text from posts) as props;
+
+-- render aggregate using json_build_object
+select render_agg('{{ title }} {{ text }}', json_build_object('title', title, 'text', text)) from posts;
 ```
 
 # Development

@@ -36,7 +36,7 @@ begin
     when typeof = 'array' or typeof LIKE '%[]' then
       return render_template(template, json_build_object('values', input));
     -- json object
-    when typeof in ('json', 'jsob') then
+    when typeof in ('json', 'jsonb') then
       -- if the json object is an array, wrap it in a 'rows' object
       if json_typeof(input::json) = 'array' then
         return render_template(template, json_build_object('rows', input));
@@ -50,3 +50,38 @@ begin
   end case;
 end;
 $$ language plpgsql stable;
+
+create or replace function render_agg_sfunc(state text, template text, data anyelement)
+returns text language plpgsql as $$
+declare
+  json_data json;
+  typeof text := pg_typeof(data)::text;
+begin
+  -- convert record to json if it's not already json
+  if typeof in ('json', 'jsonb') then
+    json_data := data;
+  elsif typeof in ('text', 'varchar', 'char', 'bpchar', 'name', 'citext', 'uuid', 'xml', 'int2', 'int4', 'int8', 'float4', 'float8', 'numeric', 'bigint') then
+    json_data := json_build_object('value', data);
+  else
+    json_data := row_to_json(data);
+  end if;
+  -- render the template
+  if state is null then
+    return render(template, json_data);
+  else
+    return state || render(template, json_data);
+  end if;
+end $$;
+
+create or replace function render_agg_final(state text)
+returns text language plpgsql as $$
+begin
+  return coalesce(state, '');
+end $$;
+
+create aggregate render_agg(text, anyelement) (
+  sfunc = render_agg_sfunc,
+  stype = text,
+  finalfunc = render_agg_final,
+  initcond = ''
+);
