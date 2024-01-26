@@ -39,6 +39,17 @@ $$;
   </body>
 </html>
 ```
+---
+```sql
+select render_agg('<article><h1>{{ title }}</h1><p>{{ text }}</p></article>', props)
+from (select title, text from posts limit 3) as props;
+```
+->
+```html
+<article><h1>Title 1</h1><p>Content for Post 1</p></article>
+<article><h1>Title 2</h1><p>Content for Post 2</p></article>
+<article><h1>Title 2</h1><p>Content for Post 3</p></article>
+```
 
 # Installation
 
