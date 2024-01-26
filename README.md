@@ -46,10 +46,10 @@ Download from [Releases](https://github.com/mkaski/pg_render/releases).
 
 ```bash
 # Ubuntu w/ PostgreSQL 15
-wget https://github.com/mkaski/pg_render/releases/download/v0.5.0/pg_render-v0.5.0-pg15-amd64-linux-gnu.deb \
-    && dpkg -i pg_render-v0.5.0-pg15-amd64-linux-gnu.deb \
+wget https://github.com/mkaski/pg_render/releases/download/v0.1.0/pg_render-v0.1.0-pg15-amd64-linux-gnu.deb \
+    && dpkg -i pg_render-v0.1.0-pg15-amd64-linux-gnu.deb \
     && apt-get install -f \
-    && rm -rf pg_render-v0.5.0-pg15-amd64-linux-gnu.deb
+    && rm -rf pg_render-v0.1.0-pg15-amd64-linux-gnu.deb
 
 # In PostgreSQL
 create extension pg_render;
@@ -59,8 +59,10 @@ create extension pg_render;
 
 See more examples in [pg_render_example](https://github.com/mkaski/pg_render_example/blob/master/sql/002_products.sql) project, and how to use pg_render with [PostgREST](https://postgrest.org).
 
+<details>
+<summary>Example Data</summary>
+
 ```sql
--- example data
 create table posts (id serial primary key, title text not null, text text not null, author text not null);
 insert into posts (title, text, author) values
   ('Title', 'Example content', 'Author'),
@@ -71,9 +73,11 @@ create table templates (id text primary key, template text not null);
 insert into templates (id, template) values ('example', '<header>{{ title }}</header><article>{{ text }}</article>');
 ```
 
-Render single template with data. Eg. render a single template with the query result.
+</details>
 
-`render(template text, input json | array | single value)`
+## `render(template text, input json | array | single value)`
+
+Render a template with the query result.
 
 ```sql
 -- render a single value
@@ -107,9 +111,10 @@ select render(
 );
 ```
 
+## `render_agg(template text, input record | json | single value)`
+
 Render multiple rows with aggregate render function. Eg. render a template for all posts queried.
 
-`render_agg(template text, input record | json | single value)`
 
 ```sql
 -- render aggregate with single column
