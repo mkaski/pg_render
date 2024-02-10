@@ -14,10 +14,8 @@ begin
     end case;
   exception
     when others then
-      -- handle and log the error
       raise exception 'error in render_template function: %', sqlerrm;
   end;
-  -- return the result_text, which might be null if an error occurred
   return result_text;
 end;
 $$ language plpgsql stable;
@@ -26,17 +24,22 @@ $$ language plpgsql stable;
 create or replace function render(template text, input anyelement)
 returns text as $$
 declare
-  typeof text := pg_typeof(input)::text;
+  typeof regtype := pg_typeof(input)::regtype;
+  json_types regtype[] := array['json'::regtype, 'jsonb'::regtype];
+  -- single value types
+  text_types regtype[] := array['text'::regtype, 'varchar'::regtype, 'char'::regtype];
+  numeric_types regtype[] := array['integer'::regtype, 'double precision'::regtype, 'real'::regtype, 'numeric'::regtype, 'smallint'::regtype, 'bigint'::regtype];
+  other_types regtype[] := array['time'::regtype, 'timestamp'::regtype, 'uuid'::regtype, 'inet'::regtype, 'xml'::regtype];
 begin
   case
     -- single value
-    when typeof in ('text', 'varchar', 'char', 'bpchar', 'name', 'citext', 'uuid', 'xml', 'int2', 'int4', 'int8', 'float4', 'float8', 'numeric', 'bigint') then
+    when typeof = any(text_types || numeric_types || other_types) then
       return render_template(template, json_build_object('value', input));
     -- array of values
-    when typeof = 'array' or typeof LIKE '%[]' then
+    when typeof::text = 'array' or typeof::text LIKE '%[]' then
       return render_template(template, json_build_object('values', input));
     -- json object
-    when typeof in ('json', 'jsonb') then
+    when typeof = any(json_types) then
       -- if the json object is an array, wrap it in a 'rows' object
       if json_typeof(input::json) = 'array' then
         return render_template(template, json_build_object('rows', input));
@@ -44,33 +47,36 @@ begin
       else
         return render_template(template, input);
       end if;
-    -- the query result is something else
+    -- the input type is not supported
     else
       raise exception 'unsupported input parameter type: %', typeof;
   end case;
 end;
 $$ language plpgsql stable;
 
-create or replace function render_agg_sfunc(state text, template text, data anyelement)
+create or replace function render_agg_sfunc(state text, template text, input anyelement)
 returns text language plpgsql as $$
 declare
-  json_data json;
-  typeof text := pg_typeof(data)::text;
+  typeof regtype := pg_typeof(input)::regtype;
+  json_input json;
+  json_types regtype[] := array['json'::regtype, 'jsonb'::regtype];
+  -- single value types
+  text_types regtype[] := array['text'::regtype, 'varchar'::regtype, 'char'::regtype];
+  numeric_types regtype[] := array['integer'::regtype, 'double precision'::regtype, 'real'::regtype, 'numeric'::regtype, 'smallint'::regtype, 'bigint'::regtype];
+  other_types regtype[] := array['time'::regtype, 'timestamp'::regtype, 'uuid'::regtype, 'inet'::regtype, 'xml'::regtype];
 begin
+  if typeof = any(json_types) then
+    json_input := input;
+  elsif typeof = any(text_types || numeric_types || other_types) then
+    json_input := json_build_object('value', input);
+  elsif typeof::text = 'array' or typeof::text LIKE '%[]' then
+    json_input := json_build_object('values', input);
+  else
   -- convert record to json if it's not already json
-  if typeof in ('json', 'jsonb') then
-    json_data := data;
-  elsif typeof in ('text', 'varchar', 'char', 'bpchar', 'name', 'citext', 'uuid', 'xml', 'int2', 'int4', 'int8', 'float4', 'float8', 'numeric', 'bigint') then
-    json_data := json_build_object('value', data);
-  else
-    json_data := row_to_json(data);
+    json_input := row_to_json(input);
   end if;
-  -- render the template
-  if state is null then
-    return render(template, json_data);
-  else
-    return state || render(template, json_data);
-  end if;
+  -- render the template to state
+  return coalesce(state, '') || render(template, json_input);
 end $$;
 
 create or replace function render_agg_final(state text)
