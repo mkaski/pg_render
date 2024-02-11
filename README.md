@@ -39,17 +39,6 @@ $$;
   </body>
 </html>
 ```
----
-```sql
-select render_agg('<article><h1>{{ title }}</h1><p>{{ text }}</p></article>', props)
-from (select title, text from posts limit 3) as props;
-```
-->
-```html
-<article><h1>Title 1</h1><p>Content for Post 1</p></article>
-<article><h1>Title 2</h1><p>Content for Post 2</p></article>
-<article><h1>Title 2</h1><p>Content for Post 3</p></article>
-```
 
 # Installation
 
@@ -76,7 +65,7 @@ See more examples in [pg_render_example](https://github.com/mkaski/pg_render_exa
 ```sql
 create table posts (id serial primary key, title text not null, text text not null, author text not null);
 insert into posts (title, text, author) values
-  ('Title', 'Example content', 'Author'),
+  ('Title 1', 'Example content 1', 'Author 1'),
   ('Title 2', 'Example content 2', 'Author 2'),
   ('Title 3', 'Example content 3', 'Author 3');
 
@@ -136,6 +125,17 @@ select render_agg('{{ title }} {{ text }}', props) from (select title, text from
 
 -- render aggregate using json_build_object
 select render_agg('{{ title }} {{ text }}', json_build_object('title', title, 'text', text)) from posts;
+```
+
+```sql
+select render_agg('<article><h1>{{ title }}</h1><p>{{ text }}</p></article>', props)
+from (select title, text from posts limit 3) as props;
+```
+->
+```html
+<article><h1>Title 1</h1><p>Content for Post 1</p></article>
+<article><h1>Title 2</h1><p>Content for Post 2</p></article>
+<article><h1>Title 2</h1><p>Content for Post 3</p></article>
 ```
 
 # Development

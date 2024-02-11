@@ -29,11 +29,12 @@ declare
   -- single value types
   text_types regtype[] := array['text'::regtype, 'varchar'::regtype, 'char'::regtype];
   numeric_types regtype[] := array['integer'::regtype, 'double precision'::regtype, 'real'::regtype, 'numeric'::regtype, 'smallint'::regtype, 'bigint'::regtype];
-  other_types regtype[] := array['time'::regtype, 'timestamp'::regtype, 'uuid'::regtype, 'inet'::regtype, 'xml'::regtype];
+  time_types regtype[] := array['time'::regtype, 'timestamp'::regtype, 'timestamptz'::regtype, 'interval'::regtype, 'date'::regtype];
+  other_types regtype[] := array['bool'::regtype, 'uuid'::regtype, 'inet'::regtype];
 begin
   case
     -- single value
-    when typeof = any(text_types || numeric_types || other_types) then
+    when typeof = any(text_types || numeric_types || time_types || other_types) then
       return render_template(template, json_build_object('value', input));
     -- array of values
     when typeof::text = 'array' or typeof::text LIKE '%[]' then
@@ -43,9 +44,9 @@ begin
       -- if the json object is an array, wrap it in a 'rows' object
       if json_typeof(input::json) = 'array' then
         return render_template(template, json_build_object('rows', input));
-      -- otherwise, just pass the object as is
+      -- otherwise, just pass the object as json
       else
-        return render_template(template, input);
+        return render_template(template, input::json);
       end if;
     -- the input type is not supported
     else
@@ -63,11 +64,12 @@ declare
   -- single value types
   text_types regtype[] := array['text'::regtype, 'varchar'::regtype, 'char'::regtype];
   numeric_types regtype[] := array['integer'::regtype, 'double precision'::regtype, 'real'::regtype, 'numeric'::regtype, 'smallint'::regtype, 'bigint'::regtype];
-  other_types regtype[] := array['time'::regtype, 'timestamp'::regtype, 'uuid'::regtype, 'inet'::regtype, 'xml'::regtype];
+  time_types regtype[] := array['time'::regtype, 'timestamp'::regtype, 'timestamptz'::regtype, 'interval'::regtype, 'date'::regtype];
+  other_types regtype[] := array['bool'::regtype, 'uuid'::regtype, 'inet'::regtype];
 begin
   if typeof = any(json_types) then
     json_input := input;
-  elsif typeof = any(text_types || numeric_types || other_types) then
+  elsif typeof = any(text_types || numeric_types || time_types || other_types) then
     json_input := json_build_object('value', input);
   elsif typeof::text = 'array' or typeof::text LIKE '%[]' then
     json_input := json_build_object('values', input);
