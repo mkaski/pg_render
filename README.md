@@ -46,10 +46,10 @@ Download from [Releases](https://github.com/mkaski/pg_render/releases).
 
 ```bash
 # Ubuntu w/ PostgreSQL 15
-wget https://github.com/mkaski/pg_render/releases/download/v0.1.0/pg_render-v0.1.0-pg15-amd64-linux-gnu.deb \
-    && dpkg -i pg_render-v0.1.0-pg15-amd64-linux-gnu.deb \
+wget https://github.com/mkaski/pg_render/releases/download/v0.1.1/pg_render-v0.1.1-pg15-amd64-linux-gnu.deb \
+    && dpkg -i pg_render-v0.1.1-pg15-amd64-linux-gnu.deb \
     && apt-get install -f \
-    && rm -rf pg_render-v0.1.0-pg15-amd64-linux-gnu.deb
+    && rm -rf pg_render-v0.1.1-pg15-amd64-linux-gnu.deb
 
 # In PostgreSQL
 create extension pg_render;
