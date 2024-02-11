@@ -23,10 +23,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
-          body: |
-            Changes in this Release
-            - First Change
-            - Second Change
+          body: ''
           draft: true
           prerelease: false
 
@@ -129,7 +126,8 @@ jobs:
           sudo dpkg-deb --build --root-owner-group ${package_dir}
 
       - name: Get upload url
-        run: echo UPLOAD_URL=$(curl --silent https://api.github.com/repos/${{ github.repository }}/releases/latest | jq .upload_url --raw-output) >> $GITHUB_ENV
+        run: |
+          echo "UPLOAD_URL=$(curl --silent -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases | jq '.[] | select(.draft == true) | .upload_url' --raw-output)" >> $GITHUB_ENV
 
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
