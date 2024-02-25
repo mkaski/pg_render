@@ -57,7 +57,7 @@ create extension pg_render;
 
 # Examples
 
-See more examples in [pg_render_example](https://github.com/mkaski/pg_render_example/blob/master/sql/002_products.sql) project, and how to use pg_render with [PostgREST](https://postgrest.org).
+See more examples in [pg_render_example](https://github.com/mkaski/pg_render_example/blob/master/sql/02_views.sql) project, and how to use pg_render with [PostgREST](https://postgrest.org).
 
 <details>
 <summary>Example Data</summary>

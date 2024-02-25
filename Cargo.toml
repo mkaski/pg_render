@@ -14,7 +14,6 @@ pg16 = ["pgrx/pg16", "pgrx-tests/pg16" ]
 pg_test = []
 
 [dependencies]
-cargo-pgrx = "0.11.3"
 liquid = "0.26.4"
 pgrx = "=0.11.3"
 
