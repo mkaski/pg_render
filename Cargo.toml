@@ -1,24 +1,29 @@
 [package]
 name = "pg_render"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "lib"]
+
+[[bin]]
+name = "pgrx_embed_pg_render"
+path = "src/bin/pgrx_embed_pg_render.rs"
 
 [features]
-default = ["pg14"]
+default = ["pg16"]
 pg14 = ["pgrx/pg14", "pgrx-tests/pg14" ]
 pg15 = ["pgrx/pg15", "pgrx-tests/pg15" ]
 pg16 = ["pgrx/pg16", "pgrx-tests/pg16" ]
+pg17 = ["pgrx/pg17", "pgrx-tests/pg17" ]
 pg_test = []
 
 [dependencies]
-liquid = "0.26.4"
-pgrx = "=0.11.3"
+liquid = "0.26.9"
+pgrx = "=0.12.8"
 
 [dev-dependencies]
-pgrx-tests = "=0.11.3"
+pgrx-tests = "=0.12.8"
 
 [profile.dev]
 panic = "unwind"
