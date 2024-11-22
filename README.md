@@ -45,11 +45,11 @@ $$;
 Download from [Releases](https://github.com/mkaski/pg_render/releases).
 
 ```bash
-# Ubuntu w/ PostgreSQL 15
-wget https://github.com/mkaski/pg_render/releases/download/v0.1.1/pg_render-v0.1.1-pg15-amd64-linux-gnu.deb \
-    && dpkg -i pg_render-v0.1.1-pg15-amd64-linux-gnu.deb \
+# On Ubuntu w/ PostgreSQL 16
+wget https://github.com/mkaski/pg_render/releases/download/v0.1.2/pg_render-v0.1.2-pg16-amd64-linux-gnu.deb \
+    && dpkg -i pg_render-v0.1.2-pg16-amd64-linux-gnu.deb \
     && apt-get install -f \
-    && rm -rf pg_render-v0.1.1-pg15-amd64-linux-gnu.deb
+    && rm -rf pg_render-v0.1.2-pg16-amd64-linux-gnu.deb
 
 # In PostgreSQL
 create extension pg_render;
@@ -152,4 +152,11 @@ Made with
 cargo install --locked cargo-pgrx
 cargo pgrx init
 cargo pgrx run
+```
+
+## Test
+
+```bash
+cargo pgrx run pg14
+make test
 ```
