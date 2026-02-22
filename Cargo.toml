@@ -21,7 +21,7 @@ pg18 = ["pgrx/pg18", "pgrx-tests/pg18" ]
 pg_test = []
 
 [dependencies]
-liquid = "0.26.9"
+liquid = "0.26.11"
 pgrx = "=0.16.1"
 
 [dev-dependencies]
