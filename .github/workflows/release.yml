@@ -126,7 +126,12 @@ jobs:
 
       - name: Get upload url
         run: |
-          echo "UPLOAD_URL=$(curl --silent -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases | jq '.[] | select(.draft == true) | .upload_url' --raw-output)" >> $GITHUB_ENV
+          upload_url=$(curl --silent -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            https://api.github.com/repos/${{ github.repository }}/releases \
+            | jq -r 'sort_by(.created_at) | reverse | [.[] | select(.draft == true)][0].upload_url')
+          # Strip URI template suffix {?name,label} that breaks GITHUB_ENV parsing
+          upload_url="${upload_url%\{*}"
+          echo "UPLOAD_URL=${upload_url}" >> $GITHUB_ENV
 
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
