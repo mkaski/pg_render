@@ -149,7 +149,7 @@ Made with
 
 ```bash
 # clone this repo
-cargo install --locked cargo-pgrx
+cargo install --locked cargo-pgrx --version 0.20.1
 cargo pgrx init
 cargo pgrx run
 ```
@@ -157,6 +157,6 @@ cargo pgrx run
 ## Test
 
 ```bash
-cargo pgrx run pg14
+cargo pgrx run pg19
 make test
 ```
